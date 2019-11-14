@@ -163,7 +163,7 @@ def main():
     r = redis.Redis(unix_socket_path='/var/run/redis/redis.sock')       # aging database
     r2 = redis.Redis(unix_socket_path='/var/run/redis/redis.sock',db=1) # persist database
     r4 = redis.Redis(unix_socket_path='/var/run/redis/redis.sock',db=3) # data database
-    database_init(r,r2,r4)
+    # database_init(r,r2,r4)
     # os.system('python ../controller/coverage.py >/dev/null &')    #calculate the coverage
     
     nodes_list = map(int, args.nodes_list)
@@ -183,6 +183,7 @@ def main():
 
     os.system("sh ../flow_table/command.sh")
 
+    database_init(r,r2,r4)
 
     for i in xrange(nodes_list[4]):
         for j in xrange(nodes_list[2]):
@@ -198,7 +199,6 @@ def main():
                 # h.cmd("python ../packet/receive/receive.py >/dev/null &")
                 for ii in xrange(7):
                     h.cmd("python ../packet/send/send_int_probe.py >/dev/null &")
-                    time.sleep(0.02)
 
 
     CLI(net)
