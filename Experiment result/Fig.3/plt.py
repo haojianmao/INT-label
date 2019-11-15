@@ -68,15 +68,11 @@ if __name__ == '__main__':
     fig, left_axis = plt.subplots()
     right_axis = left_axis.twinx()
 
-    lns1=left_axis.plot(list(data['send']), list(data['coverage']), color='red', linewidth=2, linestyle=':', markersize=8,
+    lns1=left_axis.plot(np.array(data['send'])/1000, list(data['coverage']), color='red', linewidth=2, linestyle=':', markersize=8,
                    marker='^', label='Coverage')
-    lns2=right_axis.plot(list(data['send']), list(data['overhead']), color='seagreen', linewidth=2, linestyle=':', markersize=8,
+    lns2=right_axis.plot(np.array(data['send'])/1000, list(data['overhead']), color='seagreen', linewidth=2, linestyle=':', markersize=8,
                     marker='x', c='', label='Occupation')
 
-
-
-    # plt.ylim(0, )
-    # plt.xlim(0,800)
     plt.grid()
     left_axis.tick_params(labelsize=13)
     right_axis.tick_params(labelsize=13)
@@ -88,20 +84,13 @@ if __name__ == '__main__':
 
     labels = ax.get_xticklabels() + ax.get_yticklabels()
     [label.set_fontname('Arial') for label in labels]
-    left_axis.set_xlabel('Background Traffic Rate (kbps)', font_label)
+    left_axis.set_xlabel('Background Traffic Rate (Mbps)', font_label)
     left_axis.set_ylabel('Coverage Rate',font_label)
     right_axis.set_ylabel('Bandwidth Occupation', font_label)
-    ax.xaxis.set_major_locator(MultipleLocator(50))
+    ax.xaxis.set_major_locator(MultipleLocator(0.4))
     left_axis.yaxis.set_major_locator(MultipleLocator(0.2))
     right_axis.yaxis.set_major_locator(MultipleLocator(0.02))
-    # ax.set_position([box.x0,box.y0,box.width,box.height* 0.8])
-
-    # legend = plt.legend(ncol=1,prop=font_legend)
-    # ax.set_position([box.x0, box.y0, box.width, box.height * 0.8])
-        # label.set_horizontalalignment("right")
     foo_fig = plt.gcf()  # 'get current figure'
     plt.tight_layout()
-    # left_axis.legend(loc='best',   bbox_to_anchor=(1.0, 0.5), prop=font_legend)
-    # right_axis.legend(loc='best',  bbox_to_anchor=(1.0, 0.7), prop=font_legend)
     foo_fig.savefig('./send.eps', format='eps', dpi=1000, bbox_inches='tight')
     plt.show()
