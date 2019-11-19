@@ -10,3 +10,127 @@ To tackle the above problems, in this work, we propose INT-label, an ultra-light
 
 INT-label is decoupled from the topology, allowing seamless adaptation to link failures. Like INT, INT-label also relies on the programmability of data plane provided by P4 and the in-network labelling is designed to be transparent to the end hosts. The INT information will be extracted and sent to the SDN controller at the last-hop network device for network-wide telemetry data analysis. To avoid telemetry resolution degradation due to potential loss of labelled packets on some unreliable links, we further design a feedback mechanism to adaptively change the label frequency when the controller gets aware of the packet loss by analyzing the telemetry result.
 
+# Experiment result
+Experiment result contains preliminary experimental results data and figures.
+
+## Fig.2
+The impact of background traffic on coverage rate and INT header bandwidth occupation.
+
+## Fig.3
+The impact of data plane label interval on network-wide coverage rate during system cold start.
+
+## Fig.4
+How the relation between label interval and telemetry resolution affects the coverage rate.
+
+## Fig.5
+Network-wide coverage degradation due to loss of packets under Base and Pro strategies.
+
+## Fig.6
+Bandwidth overhead under different label/probe intervals (INT-label vs HULA).
+
+## Fig.7
+Packet loss rate (due to rate limit) under different label/probe intervals (INT-label vs HULA).
+
+# INT_label
+We build an emulation-based network prototype to demonstrate INT-label performance. The hardware configuration is i5-8600k CPU and 32GB memory with Ubuntu 16.04 OS. The prototype is based on Mininet and consists of 1 controller, 4 Spine switches, 4 Leaf switches, 4 ToR switches and 8 servers.
+The INT_label include five modules:topology, flow_table, p4_source_code, packet, controller and TIME_OUT.
+
+## topology
+Establish a mininet topology and start the packet send&receive process.
+
+### clos.py
+First, compile p4 program.
+Establish a mininet topology. Here we can control the link bandwidth, delay, maximum queue length, etc.
+And initialize the database and start the packet send&receive process.
+
+## flow_table
+Initialize the OpenFlow Pipeline of each OVS.
+
+### flow_table_gen.py
+Generate the flow table.
+
+### command.sh
+Update the flow table.
+
+### flow_table
+Include OpenFlow Pipeline.
+
+## p4_source_code
+Include p4 source code, implemented SR-based INT function and data plane labelling function of INT-label.
+
+### my_int.p4
+Include Headers, Metadatas, parser, deparser and checksum calculator.
+SR-based INT function and data plane labelling function are implemented in the program.
+
+### my_int.json
+The json file that compiled from my_int.p4 by p4c compiler.
+
+### run.sh
+For compiling the my_int.p4.
+
+## packet
+Implement send&receive packet on the server.
+
+### send
+Send packet.
+
+#### send_int_probe.py
+Based on SR, Server1 and Server8 send data packet to other servers.
+Here we can control the traffic rate and forwarding path.
+
+### receive
+Receive packet and parse it.
+
+#### parse.py
+Extract the INT information.
+
+#### receive.py
+Receive packets and parse them using parse.py. And write the latest INT information into the INT database and Aging database (for calculating coverage rate).
+
+## controller 
+Implement controller-driven adaptive labelling function and calculate the coverage rate.
+
+### detect1.py
+Implement the function of setting int_sampling_flag to 1 for a while.
+
+### detect2.py
+Restore the int_sampling_flag to 0 when it is necessary.
+
+### coverage.py
+Calculate the coverage rate.
+
+### read_redis.py
+Read experimental results.
+
+### flow_table_ctrl
+The flow table is used to change the int_sampling_flag, which is modified by the detect1.py and detect2.py.
+
+## TIME_OUT
+Store global variable used to control the telemetry resolution.
+
+# How to run
+If you installed the dependencies and configured the database successfully, then you can run the system with commands below:
+
+## Base
+```
+redis-cli config set notify-keyspace-events KEA
+cd controller/
+python coverage.py
+cd topology/
+python clos.py
+```
+
+## Pro
+```
+redis-cli config set notify-keyspace-events KEA
+cd controller/
+python coverage.py
+python detect1.py
+python detect2.py
+cd topology/
+python clos.py
+```
+
+You can change bandwidth, max queue size and background traffic rate in clos.py to test INT-label under different conditions.
+If you change the topology, you need to modify packet/send/send.py.
+You can view the results of the experiment through controller/read_redis.py.
