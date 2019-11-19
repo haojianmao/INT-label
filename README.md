@@ -108,7 +108,7 @@ The flow table is used to change the int_sampling_flag, which is modified by the
 ## TIME_OUT
 Store global variable used to control the telemetry resolution.
 
-# How to run
+# How to run INT-label
 If you installed the dependencies and configured the database successfully, then you can run the system with commands below:
 
 ## Base
@@ -134,3 +134,7 @@ python clos.py
 You can change bandwidth, max queue size and background traffic rate in clos.py to test INT-label under different conditions.
 If you change the topology, you need to modify packet/send/send.py.
 You can view the results of the experiment through controller/read_redis.py.
+
+# HULA
+We reproduce the code of HULA.
+Its the role of each file and usage are similar to those of INT-label.
