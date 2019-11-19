@@ -7,17 +7,15 @@ import re
 from sklearn.preprocessing import minmax_scale
 from IPython.core.pylabtools import figsize
 from matplotlib.ticker import MultipleLocator
+import seaborn as sns
 
 
-def str_process(str):
-	temp = re.split('[\[\],\n]', str)
-	temp.remove('')
-	temp.remove('')
+def process(str):
+	return list(map(float, str.split(' ')))
 
-	temp = [float(x) for x in temp]
-	# print(list(reversed(temp))[20:50])
-	# temp = [(temp[i] + temp[i + 1] + temp[i + 2] + temp[i + 3] + temp[i + 4]) / 5 for i in range(len(temp) - 5)]
-	return list(reversed(temp))[0:num]
+
+def list_generator(mean, dis, number):  # 封装一下这个函数，用来后面生成数据
+	return np.random.normal(mean, dis * dis, number)  # normal分布，输入的参数是均值、标准差以及生成的数量
 
 
 if __name__ == '__main__':
@@ -30,37 +28,31 @@ if __name__ == '__main__':
 				  'size': 18,
 				  }
 	df = pd.read_excel('./data.xlsx')
-
 	figsize(5, 3)
 	plt.figure()
-	num = 35
-	interval = 100/1000
-	l = np.arange(0, num * interval, interval)
+	# sns.boxplot(x='interval',y='coverage',data=df,hue='Algorithm',color='blue',fliersize=1)
+	# df_base.boxplot(showfliers=False,patch_artist = True, boxprops = {'color':'orangered','facecolor':'pink'})
+	# df.boxplot(showfliers=False,patch_artist = True, boxprops = {'color':'b','facecolor':'pink'},grid=True)
+	# sns.boxplot()
+	plt.boxplot(df.values, showfliers=False, patch_artist=True, boxprops={'color': 'b', 'facecolor': 'lightsteelblue'},
+				labels=np.around(np.arange(1, 2.1, 0.1), 1))
 
-	# print(str_process(df[10][0]))
-	plt.plot(l, str_process(df[10][0]), color='red', linewidth=2, linestyle=':', markersize=8, marker='^',
-			 label='Interval=10ms')
-	plt.plot(l, str_process(df[30][0]), color='royalblue', linewidth=2, linestyle=':', markersize=8,
-			 marker='x', c='', label='Interval=30ms')
-	plt.plot(l, str_process(df[50][0]), color='seagreen', linewidth=2, linestyle=':', markersize=8,
-			 marker='o', label='Interval=50ms')
-	plt.plot(l, str_process(df[70][0]), color='black', linewidth=2, linestyle=':', markersize=8,
-			 marker='*', label='Interval=70ms')
-	# plt.ylim(0.4, 1.05)
-	plt.xlim(0, (num-1)*interval)
+	plt.ylim(0.63, 1)
 	plt.grid()
-	plt.tick_params(labelsize=15)
+	plt.tick_params(labelsize=14)
 	ax = plt.gca()
-	ax.xaxis.set_major_locator(MultipleLocator(5 * interval))
-	ax.yaxis.set_major_locator(MultipleLocator(0.2))
+	# ax.xaxis.set_major_locator(MultipleLocator(0.1))
+	ax.yaxis.set_major_locator(MultipleLocator(0.05))
 	labels = ax.get_xticklabels() + ax.get_yticklabels()
 	[label.set_fontname('Arial') for label in labels]
-	plt.xlabel('Time (s)', font_label)
+	plt.xlabel('Telemetry Interval/Label Interval', font_label)
 	plt.ylabel('Coverage Rate', font_label)
-	box = ax.get_position()
-	ax.set_position([box.x0, box.y0, box.width, box.height * 0.8])
-	ax.legend(ncol=1, prop=font_legend)
+	# label.set_horizontalalignment("right")
+	# # box = ax.get_position()
+	# # ax.set_position([box.x0, box.y0, box.width, box.height * 0.8])
+
+	plt.legend(prop=font_legend)
 	foo_fig = plt.gcf()  # 'get current figure'
 	plt.tight_layout()
-	foo_fig.savefig('./inter-cover.eps', format='eps', dpi=1000, bbox_inches='tight')
+	foo_fig.savefig('./telemetry.eps', format='eps', dpi=1000, bbox_inches='tight')
 	plt.show()

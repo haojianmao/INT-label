@@ -9,88 +9,58 @@ from IPython.core.pylabtools import figsize
 from matplotlib.ticker import MultipleLocator
 
 
-def process_data():
-    rootdir = './data/'
-    list = os.listdir(rootdir)  # 列出文件夹下所有的目录与文件
-    for type in list:
-        l = os.listdir(rootdir + type)
-        if type == 'HULA':
-            for dir2 in l:
-                dir3 = rootdir + type + '/' + dir2
-                Oint = 0
-                Odata = 0
-                for file_name in os.listdir(dir3):
-                    df = pd.read_csv(dir3 + '/' + file_name)
-                    total_overhead = float(df.iloc[0]['Average']) * float(df.iloc[0]['Rate (ms)'])
-                    data_overhead = float(df.iloc[7]['Average']) * float(df.iloc[7]['Rate (ms)'])
-                    int_overhead = total_overhead - data_overhead
-                    if file_name[0] == '1':  # 发端
-                        Oint += 2 * int_overhead
-                        Odata += 2 * data_overhead
-                    elif file_name[0] == '2':  # 收端
-                        Oint += 6 * int_overhead
-                        Odata += 6 * data_overhead
-                        # print(dir2, type)
-                        # print(Oint, '\t', Odata)
-                        # print(Oint/Odata)
-        if type == 'NEW':
-            for dir2 in l:
-                dir3 = rootdir + type + '/' + dir2
-                Oint = 0
-                Odata = 0
-                for file_name in os.listdir(dir3):
-                    df = pd.read_csv(dir3 + '/' + file_name)
-                    int_overhead = (float(df.iloc[7]['Average']) - 1016) * float(df.iloc[7]['Rate (ms)'])
-                    data_overhead = 1016 * float(df.iloc[7]['Rate (ms)'])
-                    if file_name[0] == '1':  # 发端
-                        Oint += 2 * int_overhead
-                        Odata += 2 * data_overhead
-                    elif file_name[0] == '2':  # 收端
-                        Oint += 6 * int_overhead
-                        Odata += 6 * data_overhead
-                        # print(dir2, type)
-                        # print(Oint, '\t', Odata)
-                        # print(Oint/Odata)
+def str_process(str):
+	temp = re.split('[\[\],\n]', str)
+	temp.remove('')
+	temp.remove('')
+
+	temp = [float(x) for x in temp]
+	# print(list(reversed(temp))[20:50])
+	# temp = [(temp[i] + temp[i + 1] + temp[i + 2] + temp[i + 3] + temp[i + 4]) / 5 for i in range(len(temp) - 5)]
+	return list(reversed(temp))[0:num]
 
 
 if __name__ == '__main__':
-    figsize(5, 3)
-    font_legend = {'family': 'Arial',
-                   'weight': 'normal',
-                   'size': 15,
-                   }
-    font_label = {'family': 'Arial',
-                  'weight': 'normal',
-                  'size': 18,
-                  }
-    data = pd.read_excel('./data2.xlsx')
+	font_legend = {'family': 'Arial',
+				   'weight': 'normal',
+				   'size': 15,
+				   }
+	font_label = {'family': 'Arial',
+				  'weight': 'normal',
+				  'size': 18,
+				  }
+	df = pd.read_excel('./data.xlsx')
 
-    fig, left_axis = plt.subplots()
-    right_axis = left_axis.twinx()
+	figsize(5, 3)
+	plt.figure()
+	num = 35
+	interval = 100/1000
+	l = np.arange(0, num * interval, interval)
 
-    lns1=left_axis.plot(np.array(data['send'])/1000, list(data['coverage']), color='red', linewidth=2, linestyle=':', markersize=8,
-                   marker='^', label='Coverage')
-    lns2=right_axis.plot(np.array(data['send'])/1000, list(data['overhead']), color='seagreen', linewidth=2, linestyle=':', markersize=8,
-                    marker='x', c='', label='Occupation')
-
-    plt.grid()
-    left_axis.tick_params(labelsize=13)
-    right_axis.tick_params(labelsize=13)
-
-    lns = lns1 + lns2
-    labs = [l.get_label() for l in lns]
-    ax = plt.gca()
-    ax.legend(lns, labs, bbox_to_anchor=(1.0, 0.8),prop=font_legend)
-
-    labels = ax.get_xticklabels() + ax.get_yticklabels()
-    [label.set_fontname('Arial') for label in labels]
-    left_axis.set_xlabel('Background Traffic Rate (Mbps)', font_label)
-    left_axis.set_ylabel('Coverage Rate',font_label)
-    right_axis.set_ylabel('Bandwidth Occupation', font_label)
-    ax.xaxis.set_major_locator(MultipleLocator(0.4))
-    left_axis.yaxis.set_major_locator(MultipleLocator(0.2))
-    right_axis.yaxis.set_major_locator(MultipleLocator(0.02))
-    foo_fig = plt.gcf()  # 'get current figure'
-    plt.tight_layout()
-    foo_fig.savefig('./send.eps', format='eps', dpi=1000, bbox_inches='tight')
-    plt.show()
+	# print(str_process(df[10][0]))
+	plt.plot(l, str_process(df[10][0]), color='red', linewidth=2, linestyle=':', markersize=8, marker='^',
+			 label='Interval=10ms')
+	plt.plot(l, str_process(df[30][0]), color='royalblue', linewidth=2, linestyle=':', markersize=8,
+			 marker='x', c='', label='Interval=30ms')
+	plt.plot(l, str_process(df[50][0]), color='seagreen', linewidth=2, linestyle=':', markersize=8,
+			 marker='o', label='Interval=50ms')
+	plt.plot(l, str_process(df[70][0]), color='black', linewidth=2, linestyle=':', markersize=8,
+			 marker='*', label='Interval=70ms')
+	# plt.ylim(0.4, 1.05)
+	plt.xlim(0, (num-1)*interval)
+	plt.grid()
+	plt.tick_params(labelsize=15)
+	ax = plt.gca()
+	ax.xaxis.set_major_locator(MultipleLocator(5 * interval))
+	ax.yaxis.set_major_locator(MultipleLocator(0.2))
+	labels = ax.get_xticklabels() + ax.get_yticklabels()
+	[label.set_fontname('Arial') for label in labels]
+	plt.xlabel('Time (s)', font_label)
+	plt.ylabel('Coverage Rate', font_label)
+	box = ax.get_position()
+	ax.set_position([box.x0, box.y0, box.width, box.height * 0.8])
+	ax.legend(ncol=1, prop=font_legend)
+	foo_fig = plt.gcf()  # 'get current figure'
+	plt.tight_layout()
+	foo_fig.savefig('./inter-cover.eps', format='eps', dpi=1000, bbox_inches='tight')
+	plt.show()

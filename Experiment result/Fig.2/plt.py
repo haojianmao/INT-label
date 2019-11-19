@@ -54,6 +54,7 @@ def process_data():
 
 
 if __name__ == '__main__':
+    figsize(5, 3)
     font_legend = {'family': 'Arial',
                    'weight': 'normal',
                    'size': 15,
@@ -62,30 +63,34 @@ if __name__ == '__main__':
                   'weight': 'normal',
                   'size': 18,
                   }
-    data = pd.read_excel('./data.xlsx')
-    data['HULA'] = data['HULA-int'] / data['HULA-data']
-    data['NEW'] = data['NEW-int'] / data['NEW-data']
-    figsize(5, 3)
-    plt.figure()
-    plt.plot(np.array(data.index)*1000, list(data['HULA']), color='red', linewidth=2, linestyle=':', markersize=8,
-                   marker='^', label='HULA')
-    plt.plot(np.array(data.index)*1000, list(data['NEW']), color='seagreen', linewidth=2, linestyle=':', markersize=8,
-                    marker='x', c='', label='INT-label')
-    plt.ylim(-0.02, 1)
-    plt.xlim(8, 102)
+    data = pd.read_excel('./data2.xlsx')
+
+    fig, left_axis = plt.subplots()
+    right_axis = left_axis.twinx()
+
+    lns1=left_axis.plot(np.array(data['send'])/1000, list(data['coverage']), color='red', linewidth=2, linestyle=':', markersize=8,
+                   marker='^', label='Coverage')
+    lns2=right_axis.plot(np.array(data['send'])/1000, list(data['overhead']), color='seagreen', linewidth=2, linestyle=':', markersize=8,
+                    marker='x', c='', label='Occupation')
+
     plt.grid()
-    plt.tick_params(labelsize=13)
+    left_axis.tick_params(labelsize=13)
+    right_axis.tick_params(labelsize=13)
+
+    lns = lns1 + lns2
+    labs = [l.get_label() for l in lns]
     ax = plt.gca()
-    ax.xaxis.set_major_locator(MultipleLocator(10))
-    ax.yaxis.set_major_locator(MultipleLocator(0.2))
+    ax.legend(lns, labs, bbox_to_anchor=(1.0, 0.8),prop=font_legend)
+
     labels = ax.get_xticklabels() + ax.get_yticklabels()
     [label.set_fontname('Arial') for label in labels]
-    plt.xlabel('Probe/Label Interval (ms)', font_label)
-    plt.ylabel('Bandwidth Occupation', font_label)
-    box = ax.get_position()
-    ax.set_position([box.x0, box.y0, box.width, box.height * 0.8])
-    ax.legend( ncol=1, prop=font_legend)
+    left_axis.set_xlabel('Background Traffic Rate (Mbps)', font_label)
+    left_axis.set_ylabel('Coverage Rate',font_label)
+    right_axis.set_ylabel('Bandwidth Occupation', font_label)
+    ax.xaxis.set_major_locator(MultipleLocator(0.4))
+    left_axis.yaxis.set_major_locator(MultipleLocator(0.2))
+    right_axis.yaxis.set_major_locator(MultipleLocator(0.02))
     foo_fig = plt.gcf()  # 'get current figure'
     plt.tight_layout()
-    foo_fig.savefig('./overhead.eps', format='eps', dpi=1000,bbox_inches='tight')
+    foo_fig.savefig('./send.eps', format='eps', dpi=1000, bbox_inches='tight')
     plt.show()
